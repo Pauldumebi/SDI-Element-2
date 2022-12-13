@@ -2,8 +2,11 @@ from tkinter import ttk
 from utils.widgets import tkLabel
 import tkinter as tk
 from modules.covid.index import dailyAndCumulativeCases, topFiveRegionWithHighestCases, compareTwoRegions, viewByMonths
+from modules.stopSearch.index import ageGenderEthnicity
+# , viewRangeCases
 root = tk.Tk()
 root.geometry("750x550")
+# root.geometry("+%d+%d" % (250, 10))
 root.title("Software for digital innovation element 2")
 
 tabControl = ttk.Notebook(root)
@@ -21,8 +24,14 @@ tk.Button(covidTab, text= "Daily and %Change in daily Cases", command=lambda: da
 tk.Button(covidTab, text= "Compare two Regions", command=lambda: compareTwoRegions(form)).place(x=340, y=40) 
 tk.Button(covidTab, text= "Top regions with the highest cases", command=lambda: topFiveRegionWithHighestCases(form)).place(x=100, y=70)
 tk.Button(covidTab, text= "View cases by Months", command=lambda: viewByMonths(form)).place(x=350, y=70)  
+
+tk.Button(stopSearchTab, text= "Breakdown by Age Group, Search Purpose, Ethnicity", command=lambda: ageGenderEthnicity(form2)).place(x=100, y=40)
+# tk.Button(stopSearchTab, text= "View Cases Over a Period of Time", command=lambda: viewRangeCases(form2)).place(x=100, y=70) 
  
-form = tk.Frame(root, width=500, height=330)
-form.place(x=100, y=140)
+form = tk.Frame(covidTab, width=500, height=330)
+form.place(x=100, y=120)
+
+form2 = tk.Frame(stopSearchTab, width=500, height=330)
+form2.place(x=100, y=100)
 
 root.mainloop()
