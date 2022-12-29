@@ -1,12 +1,10 @@
 from tkinter import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-# import numpy as np
+import numpy as np
 import squarify 
 import seaborn as sns
-
-# Plot Style
-# plt.style.use("ggplot")
+import matplotlib.patches as patches
 
 def canvas(fig, title):
     newWindow = Toplevel()
@@ -28,21 +26,13 @@ def canvas(fig, title):
     
 def groupBarChart( title, data, x, ylabel, legend):
     fig, ax = plt.subplots(nrows=1, figsize=(10, 10), sharex=True)
-    # x = np.arange(len(data["areaName"]))  # the label locations
-    # width = 0.45  # the width of the bars
-    # rects1 = ax.bar( x - width/2, data["newCasesBySpecimenDate-0_59"], width, label='Men')
-    # rects2 = ax.bar( x - width/2, data["newCasesBySpecimenDate-60+"], width, label='Women')
     ax.set(title=title)
     data.plot.bar( x=x, stacked=False, ax=ax)
     for label in ax.get_xticklabels():
         label.set_rotation(0)
 
     ax.set(ylabel=ylabel)
-    # ax.set_xticks(x, data["areaName"])
     ax.legend(legend)
-    # ax.bar_label(rects1, padding=3)
-    # ax.bar_label(rects2, padding=3)
-    # fig.tight_layout()
     
     canvas(fig, title)
     
@@ -66,7 +56,7 @@ def barChart(df, title, x, y):
 
     canvas(fig, title)
     
-def lineChart(title, plotTitleOne, plotTitleTwo, data, x, y, ax0Legend, plotLabel1, plotLabel2, ylabel, legends):
+def areaChart(title, plotTitleOne, plotTitleTwo, data, x, y, ax0Legend, plotLabel1, plotLabel2, ylabel, legends):
     fig, (ax0, ax1) = plt.subplots(nrows=2, figsize=(10, 10), sharex=True)
       
     fig.suptitle(title)
@@ -88,8 +78,6 @@ def lineChart(title, plotTitleOne, plotTitleTwo, data, x, y, ax0Legend, plotLabe
     
 def TreeMap(title, size, labels ):
     
-    # plt.clf()
-    # plt.cla()
     plt.close()
     
     colors=['#fae588','#f79d65','#f9dc5c','#e8ac65','#e76f51','#ef233c','#b7094c', '#c7094c', '#b2494c', '#17094c', '#b7005c'] #color palette
@@ -131,6 +119,7 @@ def lollipopChart(x, y, label, max, ylabel, title, data):
     canvas(fig, title)
     
 def dotPlot(x, y, label, max, ylabel, title):
+    plt.close()
     plt.rcParams.update({'figure.autolayout': True})
     fig, ax = plt.subplots(figsize=(16,10), dpi= 80)
     ax.hlines(y=x, xmin=1, xmax=int(max) + 18, color='gray', alpha=0.7, linewidth=1, linestyles='dashdot')
@@ -143,4 +132,41 @@ def dotPlot(x, y, label, max, ylabel, title):
     ax.set_yticklabels(label.str.title(), fontdict={'horizontalalignment': 'right'})
     ax.set_xlim(10, int(max) + 20)
 
+    canvas(fig, title)
+    
+def donutChart(title, values, labels, explode):
+    # colors
+    colors = ['#FF0101', '#3400FF', '#FFFF00', '#ADFE1F']
+    plt.pie(values, colors=colors, labels=labels, autopct='%1.1f%%', pctdistance=0.85, explode=explode)
+    
+    # draw circle
+    centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+    fig = plt.gcf()
+    
+    # Adding Circle in Pie chart
+    fig.gca().add_artist(centre_circle)
+    
+    canvas(fig, title)
+
+# df.cty
+# df.manufacturer
+def verticalBarChart(title, df, values, label ):
+
+    fig, ax = plt.subplots(figsize=(16,10), facecolor='white', dpi= 80)
+    ax.vlines(x=df.index, ymin=0, ymax=values, color='firebrick', alpha=0.7, linewidth=20)
+
+    # Annotate Text
+    for i, cty in enumerate(values):
+        ax.text(i, cty+0.5, round(cty, 0), horizontalalignment='center')
+
+    # Title, Label, Ticks and Ylim
+    ax.set_title(title, fontdict={'size':22})
+    ax.set(ylabel='Cases')
+    plt.xticks(df.index, label.str.upper(), rotation=20, horizontalalignment='right', fontsize=10)
+
+    # Add patches to color the X axis labels
+    p1 = patches.Rectangle((.57, -0.005), width=.33, height=.13, alpha=.1, facecolor='green', transform=fig.transFigure)
+    p2 = patches.Rectangle((.124, -0.005), width=.446, height=.13, alpha=.1, facecolor='red', transform=fig.transFigure)
+    fig.add_artist(p1)
+    fig.add_artist(p2)
     canvas(fig, title)

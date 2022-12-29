@@ -1,10 +1,10 @@
 from main import tkinter_app
-from utils import widgets, monthsDict, requests, filterParams
+from utils import widgets, monthsDict, filterParams
 from modules.stopSearch.index import ageGenderEthnicity
 from modules.covid.index import dailyAndCumulativeCases, topFiveRegionWithHighestCases, compareTwoRegions, viewByMonths
 from modules.covid.covidFunc import plotDailyCases, viewTopFiveRegionWithHighestCases, plotTwoRegions, plotByMonths
 from charts.index import pieChart, lollipopChart, dotPlot, groupBarChart, horizontalBarChart, areaChart, TreeMap
-from modules.stopSearch import stopSearchFunc
+from modules.stopSearch import requests, stopSearchFunc
 # from modules.stopSearch.stopSearchFunc import ageRange, searchPurpose, ethnicity
 import numpy as np
 import matplotlib.pyplot as plt
@@ -110,7 +110,7 @@ class stopAndSearchModulesIndex(unittest.TestCase):
         Frame = self.main.winfo_children()[-1]
         ageGenderEthnicity(Frame)
         noOfFormElements = len(Frame.winfo_children())
-        expected = 9
+        expected = 11
         self.assertEqual(noOfFormElements, expected)
         
 class covidModulesIndex(unittest.TestCase):

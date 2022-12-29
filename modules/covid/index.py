@@ -4,11 +4,15 @@ from utils.widgets import tkLabel
 from modules.covid.covidFunc import plotDailyCases, viewTopFiveRegionWithHighestCases, plotTwoRegions, plotByMonths
 from utils.filterParams import regionList, monthList, yearList, dayList
 
-def dailyAndCumulativeCases(form):
+def destroyFrame(form):
+    # clear the window so you can render new widgets
     if len(form.winfo_children()) > 0:
         for widget in form.winfo_children():
             widget.destroy()
             
+def dailyAndCumulativeCases(form):
+    destroyFrame(form)
+    
     startDay = StringVar(form)
     startDay.set(dayList()[0]) # default value of dropdown
 
@@ -77,11 +81,9 @@ def dailyAndCumulativeCases(form):
     Button(form, text="%Change in daily Infection rate plot", command=func1).place(x=140, y=290)
     
     
-def topFiveRegionWithHighestCases(form):    
-    if len(form.winfo_children()) > 0:
-        for widget in form.winfo_children():
-            widget.destroy()
-            
+def topFiveRegionWithHighestCases(form):  
+    destroyFrame(form) 
+           
     startDay = StringVar(form)
     startDay.set(dayList()[0]) # default value of dropdown
 
@@ -129,10 +131,8 @@ def topFiveRegionWithHighestCases(form):
     Button(form, text="View", command=func).place(x=200, y=210)
     
 def compareTwoRegions(form):    
-    if len(form.winfo_children()) > 0:
-        for widget in form.winfo_children():
-            widget.destroy()
-            
+    destroyFrame(form)
+    
     startDay = StringVar(form)
     startDay.set(dayList()[0]) # default value of dropdown
 
@@ -147,12 +147,12 @@ def compareTwoRegions(form):
     ##############################################################
 
     startMonth = StringVar(form)
-    startMonth.set(monthList()[0])
+    startMonth.set(monthList()[2])
     tkLabel(form, text="From (Start Month)", x=25, y=74)
     optionMenu(form, startMonth, monthList(), x=33, y=100)
 
     endMonth = StringVar(form)
-    endMonth.set(monthList()[1])
+    endMonth.set(monthList()[3])
     tkLabel(form, text="To (End Month)", x=350, y=74)
     optionMenu(form, endMonth, monthList(), x=350, y=100)
 
@@ -194,9 +194,7 @@ def compareTwoRegions(form):
     Button(form, text="View", command=func).place(x=200, y=280)
     
 def viewByMonths(form):    
-    if len(form.winfo_children()) > 0:
-        for widget in form.winfo_children():
-            widget.destroy()
+    destroyFrame(form)
 
     month = StringVar(form)
     month.set(monthList()[0])
@@ -212,15 +210,10 @@ def viewByMonths(form):
     
     ###############################################################
     
-    # region = StringVar(form)
-    # region.set(regionList()[1])
-    # tkLabel(form, text="Region: ", x=235, y=130)
-    # optionMenu(form, region, regionList(), x=200, y=155)
-    
     func = lambda: plotByMonths(
         month.get(),
         year.get(),
-        # region.get(),
     )
 
     Button(form, text="View", command=func).place(x=210, y=155)
+    

@@ -32,7 +32,7 @@ def validateForm(
             return messagebox.showinfo("showinfo", "Invalid selection cannot compare same region")
     
     if startDate > endDate:
-       return messagebox.showinfo("showinfo", "Invalid Date selected(start date cannot be greater than end date!!!!)")
+       return messagebox.showinfo("showinfo", "Invalid Date selected(start date cannot be greater than end date!!)")
 
     elif (startDate > maxDate) or (endDate > maxDate):
         return messagebox.showinfo("showinfo", "Invalid Date selected")

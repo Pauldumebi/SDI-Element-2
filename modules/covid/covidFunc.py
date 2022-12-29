@@ -4,9 +4,8 @@ from tkinter import messagebox
 import numpy as np
 import datetime as dt
 from utils.filterParams import regionList
-# , monthList, yearList, dayList
 from utils.monthsDict import monthsDict
-from charts.index import groupBarChart, horizontalBarChart, lineChart, TreeMap
+from charts.index import groupBarChart, horizontalBarChart, areaChart, TreeMap
 from utils.validateForm import validateForm
 
 df =pd.read_csv('data/specimenDate_ageDemographic-unstacked.csv', low_memory=False)
@@ -26,46 +25,13 @@ df["%changeInfectionRate-60+"] = (df.groupby("areaName")["newCasesBySpecimenDate
 # Replace missing values with 0
 df.replace([np.inf, -np.inf], np.nan, inplace=True)
 df.fillna(0, inplace=True)
-
-# def validateForm(
-#     startDay,
-#     endDay,
-#     startMonth,
-#     endMonth,
-#     startYear,
-#     endYear,
-#     firstRegion="",
-#     secondRegion="",
-# ):
     
-#     try:
-#         startDate = dt.datetime(
-#             day=int(startDay),
-#             month=int(monthsDict()[startMonth]),
-#             year=int(startYear),
-#         )
-#         endDate = dt.datetime(
-#             day=int(endDay), month=int(monthsDict()[endMonth]), year=int(endYear)
-#         )
-#         maxDate = dt.datetime(day=int(dayList()[0]), month=int(monthsDict()[monthList()[-1]]), year=int(yearList()[0]))     
-#     except:
-#         messagebox.showinfo("showinfo", "Invalid Date, select again")
-    
-#     if len(firstRegion) and len(secondRegion):
-#         if firstRegion == secondRegion:
-#             return messagebox.showinfo("showinfo", "Invalid selection cannot compare same region")
-    
-#     if startDate > endDate:
-#        return messagebox.showinfo("showinfo", "Invalid Date selected(start date cannot be greater than end date!!!!)")
-
-#     elif (startDate > maxDate) or (endDate > maxDate):
-#         return messagebox.showinfo("showinfo", "Invalid Date selected")
-    
-#     else:
-#         return startDate, endDate
-    
-    
-    
+def isDataEmpty(data):
+    if(len(data) <= 0):
+        return messagebox.showinfo("showinfo", "No data available for this period, select again")
+    else:
+        return len(data)
+        
 def viewTopFiveRegionWithHighestCases(
     startDay,
     endDay,
@@ -82,21 +48,17 @@ def viewTopFiveRegionWithHighestCases(
         title =  "Top regions with the highest cases from " + startDay + "/" + monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear
 
         mask = (df['date'] >= startDate) & (df['date'] <= endDate)
-        areaNameSum = df.loc[mask]
-        # areaNameSum = areaNameSum.groupby(['areaName'], as_index=False)[['newCasesBySpecimenDate-0_59', 'newCasesBySpecimenDate-60+']].sum()
-        # areaNameSum =   areaNameSum.loc[(areaNameSum["areaName"] != "United Kingdom") & (areaNameSum["areaName"] != "England")].sort_values(['newCasesBySpecimenDate-0_59', 'newCasesBySpecimenDate-60+'], ascending=False)
-        # data = areaNameSum[["areaName","newCasesBySpecimenDate-0_59","newCasesBySpecimenDate-60+"]][:5]
-        areaNameSum = areaNameSum.groupby(['areaName'], as_index=False)[['newCasesBySpecimenDate-Total']].sum()
-        areaNameSum =   areaNameSum.loc[(areaNameSum["areaName"] != "United Kingdom") & (areaNameSum["areaName"] != "England")].sort_values(['newCasesBySpecimenDate-Total'], ascending=False)
-        areaNameSum =   areaNameSum.loc[areaNameSum["newCasesBySpecimenDate-Total"] > 0] 
-        data = areaNameSum[["areaName","newCasesBySpecimenDate-Total"]][:20]
-        size = data["newCasesBySpecimenDate-Total"].values.tolist()# proportions of the categories
-        labels = data.apply(lambda x: str(x[0]) + "\n (" + str(x[1]) + ")", axis=1)
-        TreeMap( title, size, labels )
-        
-        # groupBarChart(newWindow, title, data, "areaName", "Cases Count", ["Age Group 0-59", "Age Group 60+"])
+        if isDataEmpty(mask) > 1:
+            areaNameSum = df.loc[mask]
+            areaNameSum = areaNameSum.groupby(['areaName'], as_index=False)[['newCasesBySpecimenDate-Total']].sum()
+            areaNameSum =   areaNameSum.loc[(areaNameSum["areaName"] != "United Kingdom") & (areaNameSum["areaName"] != "England")].sort_values(['newCasesBySpecimenDate-Total'], ascending=False)
+            areaNameSum =   areaNameSum.loc[areaNameSum["newCasesBySpecimenDate-Total"] > 0] 
+            data = areaNameSum[["areaName","newCasesBySpecimenDate-Total"]][:20]
+            size = data["newCasesBySpecimenDate-Total"].values.tolist()# proportions of the categories
+            labels = data.apply(lambda x: str(x[0]) + "\n (" + str(x[1]) + ")", axis=1)
+            TreeMap( title, size, labels )
 
-        return
+            return
 
 def plotDailyCases(
     case,
@@ -133,7 +95,7 @@ def plotDailyCases(
         
         if case == "Daily infection rate":
             title =  "Daily Cases for " + region + " from " + startDay + "/" +  monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear
-            lineChart(
+            areaChart(
                 # newWindow, 
                 title, 
                 "Total Daily Cases", 
@@ -149,7 +111,7 @@ def plotDailyCases(
             )        
         else: 
             title = "%Change in Total Daily Cases for " + region + " from " + startDay + "/" +  monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear
-            lineChart(
+            areaChart(
                 # newWindow, 
                 title, 
                 "%Change in Total Daily Cases", 
@@ -190,8 +152,8 @@ def plotTwoRegions(
         data = data.groupby(['areaName'], as_index=False)[['newCasesBySpecimenDate-0_59', 'newCasesBySpecimenDate-60+']].sum()
         data =   data.sort_values(['newCasesBySpecimenDate-0_59', 'newCasesBySpecimenDate-60+'], ascending=False)
         data = data[["areaName","newCasesBySpecimenDate-0_59","newCasesBySpecimenDate-60+"]]
-        
-        groupBarChart( title, data, "areaName", "Cases", ["Age Group 0-59", "Age Group 60+"])
+        if isDataEmpty(data) > 1:
+            groupBarChart(title, data, "areaName", "Cases", ["Age Group 0-59", "Age Group 60+"])
     
 def plotByMonths(
     month,

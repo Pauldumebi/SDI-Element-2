@@ -1,8 +1,8 @@
-from utils.requests import fetchCasesRequest
+from modules.stopSearch.requests import fetchCasesRequest
 from utils.monthsDict import monthsDict
 from tkinter import messagebox
 import pandas as pd
-from charts.index import pieChart, lollipopChart, dotPlot
+from charts.index import pieChart, lollipopChart, dotPlot, donutChart, verticalBarChart
 # , horizontalBarChart, barChart
 # import datetime as dt
 from utils.validateForm import validateForm
@@ -28,46 +28,13 @@ def isRequestEmpty(month, year, policeForce):
         # else:
         #     return "error"
     else: 
-        return data
-    
-# def validateForm(
-#     startMonth,
-#     endMonth,
-#     startYear,
-#     endYear,
-# ):
-    
-#     try:
-#         startDate = dt.datetime(
-#             day=int(startDay),
-#             month=int(monthsDict()[startMonth]),
-#             year=int(startYear),
-#         )
-#         endDate = dt.datetime(
-#             day=int(endDay), month=int(monthsDict()[endMonth]), year=int(endYear)
-#         )
-#         maxDate = dt.datetime(day=int(dayList()[0]), month=int(monthsDict()[monthList()[-1]]), year=int(yearList()[0]))     
-#     except:
-#         messagebox.showinfo("showinfo", "Invalid Date, select again")
-    
-#     if len(firstRegion) and len(secondRegion):
-#         if firstRegion == secondRegion:
-#             return messagebox.showinfo("showinfo", "Invalid selection cannot compare same region")
-    
-#     if startDate > endDate:
-#        return messagebox.showinfo("showinfo", "Invalid Date selected(start date cannot be greater than end date!!!!)")
-
-#     elif (startDate > maxDate) or (endDate > maxDate):
-#         return messagebox.showinfo("showinfo", "Invalid Date selected")
-    
-#     else:
-#         return startDate, endDate
-  
+        return data  
         
 def ageRange(month, year, policeForce):
     df = pd.DataFrame.from_dict(isRequestEmpty(month, year, policeForce))
     data = df.groupby(['age_range'], as_index=False).count()
     title = "Stop and Search Cases Breakdown by Age Range for " + policeForce + " in " + month + ", " + year
+    print(data, 'data')
     pieChart(title, data["involved_person"], data["age_range"])
     
 ylabel="Number of Persons Involved"
@@ -91,45 +58,19 @@ def ethnicity(month, year, policeForce):
 
     lollipopChart(data.index, data["involved_person"], data["officer_defined_ethnicity"], max, ylabel, title=title, data=data)
     
-# def plotViewRangeCases(startMonth, endMonth, startYear, endYear, policeForce):
+def outcome(month, year, policeForce):
+    df = pd.DataFrame.from_dict(isRequestEmpty(month, year, policeForce))
+    data = df.groupby(["outcome"], as_index=False)[["involved_person"]].count()
+    title = "Stop and Search Cases Outcome for " + policeForce + " in " + month + ", " + year
+   
+    verticalBarChart(title, data, data["involved_person"], data["outcome"] )
+    # scatterPlot(title, data["outcome"], data["involved_person"])
+    # print(data, 'outcome')
+    # lollipopChart(data.index, data["involved_person"], data["officer_defined_ethnicity"], max, ylabel, title=title, data=data)
     
-#     validate = validateForm(1, 1, startMonth, endMonth, startYear, endYear)
-    
-#     if type(validate) is tuple: 
-#         startDate = validate[0]
-#         endDate = validate[1]
-        
-#         dateRange = pd.period_range(start=startDate, end=endDate, freq="M").tolist()
-#         print(dateRange)
-
-#         data_dict = {}
-#         count = 0
-#         for date in dateRange:
-#             data_dict[count] = [
-#                 str(date),
-#                 fetchCasesRequest(policeForce, str(date)),
-#             ]
-#             count += 1
-
-#         df = pd.DataFrame.from_dict(
-#             data_dict, orient="index", columns=["Month", "Cases"]
-#         )
-        
-#         # print(df["Cases"])
-#         # print(type(df["Cases"]), 'class')
-#         # print(df["Month"], 'Month')
-        
-#         # label = df["Month"]
-#         # data = df["Cases"]
-#         title = "Stop and Search Cases for " + policeForce + " between " 
-#         # + startDate + ", " + endDate
-        
-#         barChart(df, title, x="Month", y="Cases")
-#         # horizontalBarChart( df, label, title)
-    
-#     # data = df.groupby(["officer_defined_ethnicity"], as_index=False)[["involved_person"]].count()
-#     # maxValue=data.max()
-#     # max = maxValue['involved_person'] #gets the max value in the dataFrame
-#     # title = "Stop and Search Cases for " + policeForce + " between " + startDate + ", " + endDate
-
-#     # lollipopChart(data.index, data["involved_person"], data["officer_defined_ethnicity"], max, ylabel, title=title, data=data)
+def gender(month, year, policeForce):
+    df = pd.DataFrame.from_dict(isRequestEmpty(month, year, policeForce))
+    data = df.groupby(["gender"], as_index=False)[["involved_person"]].count()
+    title = "Stop and Search Cases Breakdown by Gender for " + policeForce + " in " + month + ", " + year
+    explode = (0.05, 0.05)
+    donutChart(title, data["involved_person"], data["gender"], explode)
