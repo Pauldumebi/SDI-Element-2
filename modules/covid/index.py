@@ -1,7 +1,7 @@
 from tkinter import *
 from utils.widgets import optionMenu
 from utils.widgets import tkLabel
-from modules.covid.covidFunc import plotDailyCases, viewTopFiveRegionWithHighestCases, plotTwoRegions, plotByMonths
+from modules.covid.covidFunc import plotDailyCases, plotTopFiveRegionWithHighestCases, plotTwoRegions, plotByMonths
 from utils.filterParams import regionList, monthList, yearList, dayList
 
 def destroyFrame(form):
@@ -10,7 +10,7 @@ def destroyFrame(form):
         for widget in form.winfo_children():
             widget.destroy()
             
-def dailyAndCumulativeCases(form):
+def dailyAndCumulativeCasesForm(form):
     destroyFrame(form)
     
     startDay = StringVar(form)
@@ -32,7 +32,7 @@ def dailyAndCumulativeCases(form):
     optionMenu(form, startMonth, monthList(), x=33, y=100)
 
     endMonth = StringVar(form)
-    endMonth.set(monthList()[1])
+    endMonth.set(monthList()[4])
     tkLabel(form, text="To (End Month)", x=350, y=74)
     optionMenu(form, endMonth, monthList(), x=350, y=100)
 
@@ -81,7 +81,7 @@ def dailyAndCumulativeCases(form):
     Button(form, text="%Change in daily Infection rate plot", command=func1).place(x=140, y=290)
     
     
-def topFiveRegionWithHighestCases(form):  
+def topFiveRegionWithHighestCasesForm(form):  
     destroyFrame(form) 
            
     startDay = StringVar(form)
@@ -103,7 +103,7 @@ def topFiveRegionWithHighestCases(form):
     optionMenu(form, startMonth, monthList(), x=33, y=100)
 
     endMonth = StringVar(form)
-    endMonth.set(monthList()[1])
+    endMonth.set(monthList()[2])
     tkLabel(form, text="To (End Month)", x=350, y=74)
     optionMenu(form, endMonth, monthList(), x=350, y=100)
 
@@ -119,7 +119,7 @@ def topFiveRegionWithHighestCases(form):
     tkLabel(form, text="To (End Year)", x=350, y=140)
     optionMenu(form, startYear, yearList(), x=350, y=165)
     
-    func = lambda: viewTopFiveRegionWithHighestCases(
+    func = lambda: plotTopFiveRegionWithHighestCases(
         startDay.get(),
         endDay.get(),
         startMonth.get(),
@@ -130,7 +130,7 @@ def topFiveRegionWithHighestCases(form):
 
     Button(form, text="View", command=func).place(x=200, y=210)
     
-def compareTwoRegions(form):    
+def compareTwoRegionsForm(form):    
     destroyFrame(form)
     
     startDay = StringVar(form)
@@ -193,7 +193,7 @@ def compareTwoRegions(form):
 
     Button(form, text="View", command=func).place(x=200, y=280)
     
-def viewByMonths(form):    
+def viewByMonthsForm(form):    
     destroyFrame(form)
 
     month = StringVar(form)

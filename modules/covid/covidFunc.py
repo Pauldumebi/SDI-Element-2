@@ -4,7 +4,7 @@ from tkinter import messagebox
 import numpy as np
 import datetime as dt
 from utils.filterParams import regionList
-from utils.monthsDict import monthsDict
+from utils.monthList import monthsDict
 from charts.index import groupBarChart, horizontalBarChart, areaChart, TreeMap
 from utils.validateForm import validateForm
 
@@ -26,13 +26,7 @@ df["%changeInfectionRate-60+"] = (df.groupby("areaName")["newCasesBySpecimenDate
 df.replace([np.inf, -np.inf], np.nan, inplace=True)
 df.fillna(0, inplace=True)
     
-def isDataEmpty(data):
-    if(len(data) <= 0):
-        return messagebox.showinfo("showinfo", "No data available for this period, select again")
-    else:
-        return len(data)
-        
-def viewTopFiveRegionWithHighestCases(
+def plotTopFiveRegionWithHighestCases(
     startDay,
     endDay,
     startMonth,
@@ -40,25 +34,28 @@ def viewTopFiveRegionWithHighestCases(
     startYear,
     endYear,
 ):
+   
     validate = validateForm(startDay, endDay, startMonth, endMonth, startYear, endYear)
     
     if type(validate) is tuple: 
         startDate = validate[0]
         endDate = validate[1]
         title =  "Top regions with the highest cases from " + startDay + "/" + monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear
-
         mask = (df['date'] >= startDate) & (df['date'] <= endDate)
-        if isDataEmpty(mask) > 1:
-            areaNameSum = df.loc[mask]
-            areaNameSum = areaNameSum.groupby(['areaName'], as_index=False)[['newCasesBySpecimenDate-Total']].sum()
-            areaNameSum =   areaNameSum.loc[(areaNameSum["areaName"] != "United Kingdom") & (areaNameSum["areaName"] != "England")].sort_values(['newCasesBySpecimenDate-Total'], ascending=False)
-            areaNameSum =   areaNameSum.loc[areaNameSum["newCasesBySpecimenDate-Total"] > 0] 
-            data = areaNameSum[["areaName","newCasesBySpecimenDate-Total"]][:20]
-            size = data["newCasesBySpecimenDate-Total"].values.tolist()# proportions of the categories
-            labels = data.apply(lambda x: str(x[0]) + "\n (" + str(x[1]) + ")", axis=1)
-            TreeMap( title, size, labels )
+        areaNameSum = df.loc[mask]
+        areaNameSum = areaNameSum.groupby(['areaName'], as_index=False)[['newCasesBySpecimenDate-Total']].sum()
+        
+        if(len(areaNameSum) <= 0):
+            return messagebox.showinfo("showinfo", "No data available from " + startDay + "/" +  monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear)
+       
+        areaNameSum =   areaNameSum.loc[(areaNameSum["areaName"] != "United Kingdom") & (areaNameSum["areaName"] != "England")].sort_values(['newCasesBySpecimenDate-Total'], ascending=False)
+        areaNameSum =   areaNameSum.loc[areaNameSum["newCasesBySpecimenDate-Total"] > 0] 
+        data = areaNameSum[["areaName","newCasesBySpecimenDate-Total"]][:20]
+        size = data["newCasesBySpecimenDate-Total"].values.tolist() #proportions of the categories
+        labels = data.apply(lambda x: str(x[0]) + "\n (" + str(x[1]) + ")", axis=1)
 
-            return
+        TreeMap( title, size, labels )
+        return title, size, labels
 
 def plotDailyCases(
     case,
@@ -69,7 +66,6 @@ def plotDailyCases(
     startYear,
     endYear,
     region,
-    # test=False
 ):
     validate = validateForm(startDay, endDay, startMonth, endMonth, startYear, endYear)
     
@@ -89,14 +85,11 @@ def plotDailyCases(
         ]
         
         if(len(data) <= 0):
-            return messagebox.showinfo("showinfo", "No data available for this range")
-       
-   
+            return messagebox.showinfo("showinfo", "No data available for " + region + " from " + startDay + "/" +  monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear)
         
         if case == "Daily infection rate":
             title =  "Daily Cases for " + region + " from " + startDay + "/" +  monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear
             areaChart(
-                # newWindow, 
                 title, 
                 "Total Daily Cases", 
                 "Daily Case By Age Group", 
@@ -112,7 +105,6 @@ def plotDailyCases(
         else: 
             title = "%Change in Total Daily Cases for " + region + " from " + startDay + "/" +  monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear
             areaChart(
-                # newWindow, 
                 title, 
                 "%Change in Total Daily Cases", 
                 "%Change of Daily Case By Age Group", 
@@ -125,11 +117,8 @@ def plotDailyCases(
                 "Cases", 
                 legends=["Age Group 0-59", "Age Group 60+"]
             )
-            
-        
 
-        return
-
+    return data, title
 
 def plotTwoRegions(
     startDay,
@@ -152,8 +141,11 @@ def plotTwoRegions(
         data = data.groupby(['areaName'], as_index=False)[['newCasesBySpecimenDate-0_59', 'newCasesBySpecimenDate-60+']].sum()
         data =   data.sort_values(['newCasesBySpecimenDate-0_59', 'newCasesBySpecimenDate-60+'], ascending=False)
         data = data[["areaName","newCasesBySpecimenDate-0_59","newCasesBySpecimenDate-60+"]]
-        if isDataEmpty(data) > 1:
-            groupBarChart(title, data, "areaName", "Cases", ["Age Group 0-59", "Age Group 60+"])
+        if(len(data) <= 0):
+            return messagebox.showinfo("showinfo", "No data available for " + firstRegion + " and " + secondRegion + " from " + startDay + "/" +  monthsDict()[startMonth] + "/" + startYear + " to " + endDay + "/" + monthsDict()[endMonth] + "/" + endYear)
+        
+        groupBarChart(title, data, "areaName", "Cases", ["Age Group 0-59", "Age Group 60+"])
+    return data, title
     
 def plotByMonths(
     month,
@@ -175,6 +167,6 @@ def plotByMonths(
     groupLabel = data["areaName"][:20]
     data = data["newCasesBySpecimenDate-Total"][:20]
     title =  "Regions with the highest cases in the month of " + month + ", " + year
+
     horizontalBarChart( data, groupLabel, title)
-        
-    return
+    return data, groupLabel, title

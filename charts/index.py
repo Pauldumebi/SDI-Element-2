@@ -93,12 +93,13 @@ def TreeMap(title, size, labels ):
     # plt.show()
     
 def pieChart(title, data, labels):
+    plt.close()
     fig, ax = plt.subplots(figsize=(10, 10))
     ax.pie(data, labels=labels, autopct='%.1f%%',
         wedgeprops={'linewidth': 3.0, 'edgecolor': 'white'},
         textprops={'size': 'x-large'})
     ax.set_title(title, fontsize=14)
-
+    # plt.show()
     canvas(fig, title)
     
 
@@ -135,6 +136,7 @@ def dotPlot(x, y, label, max, ylabel, title):
     canvas(fig, title)
     
 def donutChart(title, values, labels, explode):
+    plt.close()
     # colors
     colors = ['#FF0101', '#3400FF', '#FFFF00', '#ADFE1F']
     plt.pie(values, colors=colors, labels=labels, autopct='%1.1f%%', pctdistance=0.85, explode=explode)
@@ -148,8 +150,6 @@ def donutChart(title, values, labels, explode):
     
     canvas(fig, title)
 
-# df.cty
-# df.manufacturer
 def verticalBarChart(title, df, values, label ):
 
     fig, ax = plt.subplots(figsize=(16,10), facecolor='white', dpi= 80)

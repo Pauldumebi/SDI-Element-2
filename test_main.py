@@ -1,17 +1,16 @@
 from main import tkinter_app
-from utils import widgets, monthsDict, filterParams
-from modules.stopSearch.index import ageGenderEthnicity
-from modules.covid.index import dailyAndCumulativeCases, topFiveRegionWithHighestCases, compareTwoRegions, viewByMonths
-from modules.covid.covidFunc import plotDailyCases, viewTopFiveRegionWithHighestCases, plotTwoRegions, plotByMonths
-from charts.index import pieChart, lollipopChart, dotPlot, groupBarChart, horizontalBarChart, areaChart, TreeMap
-from modules.stopSearch import requests, stopSearchFunc
-# from modules.stopSearch.stopSearchFunc import ageRange, searchPurpose, ethnicity
+from utils import monthList, widgets, filterParams, validateForm
+from modules.stopSearch.index import stopAndSearchForm
+from modules.covid.index import dailyAndCumulativeCasesForm, topFiveRegionWithHighestCasesForm, compareTwoRegionsForm, viewByMonthsForm
+from modules.covid.covidFunc import plotDailyCases, plotTopFiveRegionWithHighestCases, plotTwoRegions, plotByMonths
+from modules.stopSearch import requests as req
+from modules.stopSearch.stopSearchFunc import validateDate, ageRange, searchPurpose, ethnicity, outcome, gender
 import numpy as np
-import matplotlib.pyplot as plt
-
+import pandas as pd
 import unittest
 import pytest
 import warnings
+import requests
 
 class widgetsModules(unittest.TestCase):
 
@@ -28,69 +27,55 @@ class widgetsModules(unittest.TestCase):
     def tearDown(self):
         self.main.destroy()
     
+    # tests if a label from tkinter is returned
     def testTkLabel(self):
-        #tests if a label from tkinter is returned
-
         label = widgets.tkLabel(self.main, "Test Label", 0, 0).winfo_class()
         expected = "Label"
         self.assertEqual(label, expected)
     
     def testOptionMenu(self):
-    
         dropDownMenu = widgets.optionMenu(self.main, 10, ["One", "Two"], 0, 0).winfo_class()
         expected = "Menubutton"
         self.assertEqual(dropDownMenu, expected)
         
+    # tests that a dictionary is returned with a length of 12 items
     def testMonthDictionary(self):
-        #tests that a dictionary is returned with a length of 12 items
-
-        isMonthDict = monthsDict.monthsDict()
-        variableType = isinstance(isMonthDict, dict)
-        expected = True
-        self.assertEqual(variableType, expected)
+        isMonthDict = monthList.monthsDict()
+        self.assertIsInstance(isMonthDict, dict)
         
         message = "You cannot have more than 12 months in a calendar year as at the time of this code"
-        isMonthDict = len(monthsDict.monthsDict())
+        isMonthDict = len(monthList.monthsDict())
         expected = 12
         self.assertLessEqual(isMonthDict, expected, message)
         
-    def testPoliceForceDictionary(self):
-        #tests if stop & search police force list request returns a dictionary"""
-
-        policeDict = requests.fetchPoliceForce()
-        variableType = isinstance(policeDict, dict)
-        expected = True
-        self.assertEqual(variableType, expected)
-        
+    # tests if region is a list of items
     def testRegionList(self):
-        #tests if region is a list of items
-
         regions = filterParams.regionList()
-        variableType = isinstance(regions, list)
-        expected = True
-        self.assertEqual(variableType, expected)
+        self.assertIsInstance(regions, list)
         
+    # tests year is a list
     def testYearList(self):
-        #tests year is a list
-
         year = filterParams.monthList()
-        variableType = isinstance(year, list)
-        expected = True
-        self.assertEqual(variableType, expected)
+        self.assertIsInstance(year, list)
         
+    # tests if day is a list of all days
     def testDayList(self):
-        #tests if day is a list of all days
-
         days = filterParams.dayList()
-        variableType = isinstance(days, list)
-        expected = True
-        self.assertEqual(variableType, expected)
+        self.assertIsInstance(days, list)
     
-    # Mock test for api to get cases
+    # tests if this function returns a tuple
+    def testValidateForm(self):
+        date = validateForm.validateForm("1", "2", "January", "April", "2020", "2020", "Hartlepool", "Middlesbrough")
+        self.assertIsInstance(date, tuple)
+        
+        message = "You cannot have more than 2 dates, start and end"
+        dateLength = len(date)
+        expected = 2
+        
+        self.assertEqual(dateLength, expected, message)
         
 
 class stopAndSearchModulesIndex(unittest.TestCase):
-    """Contains tests for the covid_charts.py module"""
 
     @pytest.mark.asyncio
     async def _start_app(self):
@@ -104,17 +89,16 @@ class stopAndSearchModulesIndex(unittest.TestCase):
     def tearDown(self):
         self.main.destroy()
         
-    def testAgeGenderEthnicity(self): 
-        # tests if all widgets for ageGenderEthnicity function renders
+    def testStopAndSearchForm(self): 
+        # tests if all widgets for stopAndSearchForm function renders
 
         Frame = self.main.winfo_children()[-1]
-        ageGenderEthnicity(Frame)
+        stopAndSearchForm(Frame)
         noOfFormElements = len(Frame.winfo_children())
         expected = 11
         self.assertEqual(noOfFormElements, expected)
         
-class covidModulesIndex(unittest.TestCase):
-    """Contains tests for the covid_charts.py module"""
+class stopAndSearchRequestModules(unittest.TestCase):
 
     @pytest.mark.asyncio
     async def _start_app(self):
@@ -128,95 +112,172 @@ class covidModulesIndex(unittest.TestCase):
     def tearDown(self):
         self.main.destroy()
         
-    def formLength(self, Frame, expected):
-        noOfFormElements = len(Frame.winfo_children())
+    # tests if stop & search police force list request returns a dictionary
+    def testPoliceForceDictionary(self):
+        policeDict = req.fetchPoliceForce()
+        self.assertIsInstance(policeDict, dict)
+        
+    # tests if stop & search api returns a status code of 200
+    def testFetchCasesRequestStatusCodeEquals200(self):
+        response = requests.get("https://data.police.uk/api/stops-force?force=cleveland&date=2021-06")
+        self.assertEqual(response.status_code, 200)
+    
+    # tests if stop & search api content-type returns application/json
+    def testFetchCasesRequestContentType(self):
+        response = requests.get("https://data.police.uk/api/stops-force?force=cleveland&date=2021-06")
+        self.assertEqual(response.headers["Content-Type"] , "application/json")
+     
+    # tests this returns a tuple 
+    def testFetchCasesRequest(self):
+        cases = req.fetchCasesRequest("Avon and Somerset Constabulary", "2021-06")
+        self.assertIsInstance(cases, tuple)
+        
+        
+class covidFuncModules(unittest.TestCase):
+
+    @pytest.mark.asyncio
+    async def _start_app(self):
+        self.main.mainloop()
+
+    def setUp(self):
+        warnings.filterwarnings("ignore")
+        self.main = tkinter_app()
+        self._start_app()
+
+    def tearDown(self):
+        self.main.destroy()
+        
+    # test that the plotByMonths function returns a pd series, object and string
+    def testPlotByMonths(self):
+        data, groupLabel, title = plotByMonths("January", "2021")
+        dataType = isinstance(data, pd.Series)
+        groupLabelType = isinstance(groupLabel, object)
+        titleType = isinstance(title, str)
+        
+        expected = True
+        self.assertEqual([dataType, groupLabelType, titleType], [expected, expected, expected])
+
+    def testPlotDailyCases(self):
+        # test that the plotDailyCases function returns a pd DataFrame, and string a string
+        data, title = plotDailyCases("Daily infection rate", "1", "2", "January", "April", "2020", "2020", "Hartlepool")
+        dataType = isinstance(data, pd.DataFrame)
+        titleType = isinstance(title, str)
+        expected = True
+        self.assertEqual([dataType, titleType], [expected, expected])
+        
+    def testPlotTopFiveRegionWithHighestCases(self):
+        # test that the plotTopFiveRegionWithHighestCases function returns a list, string, and a pd series
+        title, size, labels = plotTopFiveRegionWithHighestCases("1", "2", "January", "March", "2020", "2020")
+        titleType = isinstance(title, str)
+        sizeType = isinstance(size, list)
+        labelsType = isinstance(labels, pd.Series)
+        expected = True
+        self.assertEqual([titleType, sizeType, labelsType], [expected, expected, expected])
+        
+    def testPlotTwoRegions(self):
+        # test that the plotTwoRegions function returns a pd DataFrame, and string
+        data, title = plotTwoRegions("1", "2", "March", "April", "2020", "2020", "Hartlepool", "Middlesbrough")
+        dataType = isinstance(data, pd.DataFrame)
+        titleType = isinstance(title, str)
+        expected = True
+        self.assertEqual([dataType, titleType], [expected, expected])
+        
+class covidModulesIndex(unittest.TestCase):
+
+    @pytest.mark.asyncio
+    async def _start_app(self):
+        self.main.mainloop()
+
+    def setUp(self):
+        warnings.filterwarnings("ignore")
+        self.main = tkinter_app()
+        self._start_app()
+
+    def tearDown(self):
+        self.main.destroy()
+        
+    def formLength(self, function, expected):
+        frame = self.main.winfo_children()[-1]
+        function(frame)
+        noOfFormElements = len(frame.winfo_children())
         self.assertEqual(noOfFormElements, expected)
         
-    def testViewByMonths(self): 
-        # tests if all widgets for viewByMonth function renders
-        Frame = self.main.winfo_children()[-1]
-        viewByMonths(Frame)
-        self.formLength(Frame, 5)
+    # tests if all widgets for viewByMonth function renders
+    def testViewByMonthsForm(self): 
+        self.formLength(viewByMonthsForm, 5)
         
-    def testCompareTwoRegions(self): 
-        # tests if all widgets for compareTwoRegions function renders
-        Frame = self.main.winfo_children()[-1]
-        compareTwoRegions(Frame)
-        self.formLength(Frame, 17)
+    # tests if all widgets for compareTwoRegionsForm function renders
+    def testCompareTwoRegionsForm(self): 
+        self.formLength(compareTwoRegionsForm, 17)
         
-    def testDailyAndCumulativeCases(self): 
-        # tests if all widgets for dailyAndCumulativeCases function renders
-        Frame = self.main.winfo_children()[-1]
-        dailyAndCumulativeCases(Frame)
-        self.formLength(Frame, 16)
+    # tests if all widgets for dailyAndCumulativeCasesForm function renders
+    def testDailyAndCumulativeCasesForm(self): 
+        self.formLength(dailyAndCumulativeCasesForm, 16)
         
-    def testTopFiveRegionWithHighestCases(self): 
-        # tests if all widgets for topFiveRegionWithHighestCases function renders
-        Frame = self.main.winfo_children()[-1]
-        topFiveRegionWithHighestCases(Frame)
-        self.formLength(Frame, 13)
-        
-        
-# class stopAndSearchModules(unittest.TestCase):
-#     """Contains tests for the covid_charts.py module"""
+    def testTopFiveRegionWithHighestCasesForm(self): 
+        # tests if all widgets for topFiveRegionWithHighestCasesForm function renders
+        self.formLength(topFiveRegionWithHighestCasesForm, 13)
+  
+class stopAndSearchFuncModules(unittest.TestCase):
 
-#     @pytest.mark.asyncio
-#     # To start the tkinter window without launching it
-#     async def _start_app(self):
-#         self.main.mainloop()
+    @pytest.mark.asyncio
+    async def _start_app(self):
+        self.main.mainloop()
 
-#     def setUp(self):
-#         warnings.filterwarnings("ignore")
-#         self.main = tkinter_app()
-#         self._start_app()
+    def setUp(self):
+        warnings.filterwarnings("ignore")
+        self.main = tkinter_app()
+        self._start_app()
 
-#     def tearDown(self):
-#         self.main.destroy()
+    def tearDown(self):
+        self.main.destroy()
         
-#     def testAgeRange(self): 
-#         newWindow = stopSearchFunc.ageRange("September", 2020, "Test Police Force")
-#         expected = "data"
-#         self.assertEqual(newWindow, expected)
+    def testValidateDate(self):
+        date = validateDate("2021", "March")
+        dateType = isinstance(date, str)
+        expected = True
+        self.assertEqual(dateType, expected)
+
+    def testAgeRange(self):
+        data, title = ageRange("January", "2021", "Avon and Somerset Constabulary")
+        dataType = isinstance(data, pd.DataFrame)
+        titleType = isinstance(title, str)
+        expected = True
+        self.assertEqual([dataType, titleType], [expected, expected])
         
+    def testSearchPurpose(self):
+        data, max, ylabel, title = searchPurpose("January", "2021", "Avon and Somerset Constabulary")
         
-# class chartModules(unittest.TestCase):
-#     """Contains tests for the covid_charts.py module"""
-
-#     @pytest.mark.asyncio
-#     # To start the tkinter window without launching it
-#     async def _start_app(self):
-#         self.main.mainloop()
-
-#     def setUp(self):
-#         warnings.filterwarnings("ignore")
-#         self.main = tkinter_app()
-#         self._start_app()
-
-#     def tearDown(self):
-#         self.main.destroy()
+        dataType = isinstance(data, pd.DataFrame)
+        maxType = isinstance(max, np.int64)
+        ylabelType = isinstance(ylabel, str)
+        titleType = isinstance(title, str)
+        expected = True
+        self.assertEqual([dataType, maxType, ylabelType, titleType], [expected, expected, expected, expected])
         
-#     def plot_square(x, y):
-#         y_squared = np.square(y)
-#         return plt.plot(x, y_squared)
-
-#     def testPieChart(self):
-#         x, y = [0, 1, 2], [0, 1, 2]
-#         line, = self.plot_square(x, y)
-#         x_plot, y_plot = line.get_xydata().T
-#         np.testing.assert_array_equal(y_plot, np.square(y))
-    
-        # newWindow = pieChart("title", ["1", "2"], ["18-24", "Over 34"]) 
-        # # covid_charts.plot_daily(
-        # #     "cases", "1", "June", "2020", "1", "August", "2020", "Hartlepool"
-        # # )
-        # expected = "renders"
-        # self.assertEqual(newWindow, expected)
-
-        # newWindow = covid_charts.plot_daily(
-        #     "infection", "1", "June", "2020", "1", "August", "2020", "Hartlepool"
-        # )
-        # expected = "renders"
-        # self.assertEqual(newWindow, expected)
+    def testEthnicity(self):
+        data, max, ylabel, title = ethnicity("January", "2021", "Avon and Somerset Constabulary")
+        dataType = isinstance(data, pd.DataFrame)
+        maxType = isinstance(max, np.int64)
+        ylabelType = isinstance(ylabel, str)
+        titleType = isinstance(title, str)
+        expected = True
+        self.assertEqual([dataType, maxType, ylabelType, titleType], [expected, expected, expected, expected])
+        
+    def testOutcome(self):
+        data, title = outcome("January", "2021", "Avon and Somerset Constabulary")
+        dataType = isinstance(data, pd.DataFrame)
+        titleType = isinstance(title, str)
+        expected = True
+        self.assertEqual([dataType, titleType], [expected, expected])
+        
+    def testGender(self):
+        data, title, explode = gender("January", "2021", "Avon and Somerset Constabulary")
+        dataType = isinstance(data, pd.DataFrame)
+        titleType = isinstance(title, str)
+        explodeType = isinstance(explode, tuple)
+        expected = True
+        self.assertEqual([dataType, titleType, explodeType], [expected, expected, expected])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
