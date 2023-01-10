@@ -98,7 +98,7 @@ In this project, the `Testing Driven Development (TDD)` approach was used. All t
 
 The procedures shown below show how to execute the tests used for this project and evaluate the application's test coverage:
 
-1. Run ***test_main.py*** file. Open the project folder in ***Command Prompt*** or ***Terminal (Mac)*** and type `python -m test_app`. For ***Mac*** type `python3 -m test_app`, this runs all the test present in the file with the result of each test pass or fail see image ![view test](img/test.png).
+1. Run ***test_main.py*** file. Open the project folder in ***Command Prompt*** or ***Terminal (Mac)*** and type `python -m test_main`. For ***Mac*** type `python3 -m test_main`, this runs all the test present in the file with the result of each test pass or fail see image ![view test](img/test.png).
 
 2. To check for test coverage, Open the project folder in ***Command Prompt*** or ***Terminal (Mac)***
     1.Run the tests with coverage first by entering the following command into ***Command Prompt*** or ***Terminal (Mac)***. `python -m coverage run -m unittest discover`. For ***Mac*** use `python3 -m coverage run -m unittest discover`, this runs all the test for the GUI application and calculates the coverage ![view test](img/coverage.png).
