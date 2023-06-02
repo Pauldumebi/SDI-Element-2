@@ -1,6 +1,6 @@
 # Introduction
 
-This project was done and submitted to the School of Computing, Engineering and Digital Technologies as part of the in course assessment(ICA) for Software for Digital Innovation by ***Chukwurah Paul Dumebi***. This GUI application was created with the help of the `Python Tkinter GUI framework` and additional helpful Python packages like pandas and numpy. The requirements.txt file contains a list of the full packages used on this project.
+This project was done and submitted to the School of Computing, Engineering and Digital Technologies as part of the in course assessment(ICA) for Software for Digital Innovation by ***Chukwurah Paul Dumebi***. This GUI application was created with the help of the `Python Tkinter GUI framework` and additional helpful Python packages like pandas and numpy. The requirements.txt file contains a list of the full packages used in this project.
 
 
 # Folder Structure
